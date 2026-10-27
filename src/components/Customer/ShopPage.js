@@ -14,7 +14,7 @@ import { handleAuthError } from "../../AuthRoute";
 import ProductCard from "./ProductCard";
 import { addToCompare } from "../../utils/compareUtils";
 
-const API_BASE_URL = "http://localhost:5000/api/customer";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/customer";
 
 // AUTH HELPERS
 const getToken = () => localStorage.getItem("token") || null;

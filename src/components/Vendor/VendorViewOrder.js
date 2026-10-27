@@ -26,7 +26,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/vendors";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/vendors";
 
 const getToken = () =>
   localStorage.getItem("vendorToken") || localStorage.getItem("token") || null;
@@ -135,7 +135,7 @@ const VendorViewOrder = () => {
       } catch (err1) {
         // Fallback endpoint if plural route is not matched
         res = await axios.get(
-          `http://localhost:5000/api/vendor/orders/${orderId}`,
+          `https://smart-commerce-platform-backend.onrender.com/api/vendor/orders/${orderId}`,
           {
             headers,
           },
@@ -225,7 +225,7 @@ const VendorViewOrder = () => {
         );
       } catch (err1) {
         res = await axios.put(
-          `http://localhost:5000/api/vendor/orders/${targetId}/status`,
+          `https://smart-commerce-platform-backend.onrender.com/api/vendor/orders/${targetId}/status`,
           payload,
           { headers: { Authorization: `Bearer ${token}` } },
         );

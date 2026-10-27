@@ -24,7 +24,7 @@ import {
 } from "lucide-react";
 
 // Matches backend vendor router mount point
-const API_BASE_URL = "http://localhost:5000/api/vendors";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/vendors";
 
 // Dynamic token resolver helper (never stale)
 const getToken = () => {

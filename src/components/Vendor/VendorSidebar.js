@@ -66,7 +66,7 @@ const VendorSidebar = ({ sidebarOpen, onClose }) => {
       localStorage.getItem("vendorToken") || localStorage.getItem("token");
     if (token) {
       axios
-        .get("http://localhost:5000/api/vendors/store", {
+        .get("https://smart-commerce-platform-backend.onrender.com/api/vendors/store", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {

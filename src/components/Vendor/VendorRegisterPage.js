@@ -23,8 +23,8 @@ import {
   Trash2,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/vendors";
-const CATEGORIES_API_URL = "http://localhost:5000/api/categories-list";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/vendors";
+const CATEGORIES_API_URL = "https://smart-commerce-platform-backend.onrender.com/api/categories-list";
 
 const VendorRegisterPage = () => {
   const navigate = useNavigate();

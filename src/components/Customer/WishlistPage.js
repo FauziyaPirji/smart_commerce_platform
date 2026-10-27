@@ -15,8 +15,8 @@ import {
   X,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/customer";
-const BACKEND_URL = "http://localhost:5000";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/customer";
+const BACKEND_URL = "https://smart-commerce-platform-backend.onrender.com";
 
 // AUTH HELPERS
 const getToken = () => localStorage.getItem("token") || null;

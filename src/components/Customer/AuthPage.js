@@ -21,8 +21,8 @@ import {
   Inbox,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/users";
-const CUSTOMER_API_URL = "http://localhost:5000/api/customer";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/users";
+const CUSTOMER_API_URL = "https://smart-commerce-platform-backend.onrender.com/api/customer";
 
 const syncGuestDataAfterLogin = async (token) => {
   try {
@@ -278,7 +278,6 @@ const AuthPage = ({ mode = "login" }) => {
         setSubmitted(true);
       }
     } catch (err) {
-      handleAuthError(err);
       console.error("Authentication error:", err.response?.data || err.message);
 
       setError(
@@ -337,7 +336,6 @@ const AuthPage = ({ mode = "login" }) => {
 
       setTimeout(() => navigate(redirectUrl), 1000);
     } catch (err) {
-      handleAuthError(err);
       console.error(
         "2FA verification error:",
         err.response?.data || err.message,

@@ -24,7 +24,7 @@ import {
   Package,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api";
 
 const formatMoney = (val) =>
   `₹${new Intl.NumberFormat("en-IN").format(Number(val) || 0)}`;

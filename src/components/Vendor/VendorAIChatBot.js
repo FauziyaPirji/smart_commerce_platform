@@ -48,7 +48,7 @@ const VendorAIChatBot = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/vendor/chat",
+        "https://smart-commerce-platform-backend.onrender.com/api/vendor/chat",
         { messages: newMsgs },
         { headers: { Authorization: `Bearer ${token}` } }
       );

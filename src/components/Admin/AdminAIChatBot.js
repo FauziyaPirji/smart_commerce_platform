@@ -49,7 +49,7 @@ const AdminAIChatBot = () => {
 
     try {
       const res = await axios.post(
-        "http://localhost:5000/api/admin/chat",
+        "https://smart-commerce-platform-backend.onrender.com/api/admin/chat",
         { messages: newMsgs },
         { headers: { Authorization: `Bearer ${token}` } }
       );

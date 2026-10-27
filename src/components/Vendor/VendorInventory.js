@@ -18,7 +18,7 @@ import {
   ArrowUpDown,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/vendor/inventory";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/vendor/inventory";
 
 const getToken = () =>
   localStorage.getItem("vendorToken") || localStorage.getItem("token") || "";

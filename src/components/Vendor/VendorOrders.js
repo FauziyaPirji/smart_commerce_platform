@@ -26,7 +26,7 @@ import {
   Loader2,
 } from "lucide-react";
 
-const API_BASE_URL = "http://localhost:5000/api/vendors";
+const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api/vendors";
 
 const getToken = () =>
   localStorage.getItem("vendorToken") || localStorage.getItem("token") || null;
