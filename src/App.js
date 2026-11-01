@@ -143,10 +143,18 @@ function App() {
   const isAdminPath =
     location.pathname.startsWith("/admin") &&
     location.pathname !== "/admin/login";
+  const VENDOR_PANEL_SEGMENTS = [
+    "products", "orders", "inventory",
+    "earnings", "payouts", "customers",
+    "store", "profile",
+  ];
+  const pathParts = location.pathname.split("/").filter(Boolean);
+  // pathParts[0] === "vendor" AND (it's exactly /vendor dashboard OR a known panel sub-route)
   const isVendorPath =
-    location.pathname.startsWith("/vendor") &&
+    pathParts[0] === "vendor" &&
     location.pathname !== "/vendor/login" &&
-    location.pathname !== "/vendor/register";
+    location.pathname !== "/vendor/register" &&
+    (pathParts.length === 1 || VENDOR_PANEL_SEGMENTS.includes(pathParts[1]));
 
   return (
     <>
