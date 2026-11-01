@@ -487,40 +487,6 @@ const VendorViewProduct = () => {
 
         <div className="rounded-2xl border border-slate-200 bg-white p-5">
           <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-emerald-50 text-emerald-600">
-              <ShoppingBag size={20} />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold text-slate-500">Units Sold</p>
-
-              <p className="text-xl font-bold text-slate-900">
-                {formatNumber(sold)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-center gap-3">
-            <div className="grid size-10 place-items-center rounded-xl bg-teal-50 text-teal-600">
-              <BarChart3 size={20} />
-            </div>
-
-            <div>
-              <p className="text-xs font-semibold text-slate-500">
-                Total Revenue
-              </p>
-
-              <p className="text-xl font-bold text-slate-900">
-                ₹{formatPrice(revenue)}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-slate-200 bg-white p-5">
-          <div className="flex items-center gap-3">
             <div className="grid size-10 place-items-center rounded-xl bg-amber-50 text-amber-600">
               <AlertTriangle size={20} />
             </div>
