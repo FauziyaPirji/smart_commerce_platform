@@ -30,9 +30,13 @@ import {
   ExternalLink,
   ShieldCheck,
   RefreshCw,
+  Eye,
+  AlertTriangle,
 } from "lucide-react";
 
-const API_BASE_URL = "https://smart-commerce-platform-backend.onrender.com/api";
+// Dynamically use localhost for development with fallback
+const API_BASE_URL =
+  process.env.REACT_APP_API_URL || "http://localhost:5000/api";
 
 /* ============================================================================
    HELPERS & FORMATTERS
@@ -45,7 +49,7 @@ const formatNumber = (val) => {
 
 const formatCurrency = (val) => {
   const num = Number(val);
-  return isNaN(num) ? "₹0" : `₹${num.toLocaleString("en-IN")}`;
+  return isNaN(num) ? "₹0" : `₹${Math.round(num).toLocaleString("en-IN")}`;
 };
 
 const getInitials = (name) => {
@@ -59,7 +63,7 @@ const getInitials = (name) => {
 
 const getNormalizedStatus = (vendor) => {
   const status = String(
-    vendor?.status || vendor?.approvalStatus || "",
+    vendor?.status || vendor?.approvalStatus || ""
   ).toLowerCase();
 
   if (status === "approved" && vendor?.isActive !== false) {
@@ -78,7 +82,6 @@ const getNormalizedStatus = (vendor) => {
   return "Active";
 };
 
-// Extracts Image URL with multiple fallbacks
 const getVendorImage = (vendor) => {
   return (
     vendor?.storeLogo ||
@@ -93,7 +96,7 @@ const getVendorImage = (vendor) => {
 };
 
 /* ============================================================================
-   AVATAR WITH BROKEN IMAGE FALLBACK
+   AVATAR COMPONENT
    ============================================================================ */
 const VendorAvatar = ({ vendor, size = "lg" }) => {
   const [imageError, setImageError] = useState(false);
@@ -144,7 +147,6 @@ const AdminViewVendor = () => {
   const [error, setError] = useState("");
   const [copiedKey, setCopiedKey] = useState(null);
 
-  // Copy helper
   const handleCopy = (text, key) => {
     if (!text) return;
     navigator.clipboard.writeText(text);
@@ -152,13 +154,12 @@ const AdminViewVendor = () => {
     setTimeout(() => setCopiedKey(null), 2000);
   };
 
-  // FETCH VENDOR & CATEGORIES FROM BACKEND
   const fetchVendorData = async () => {
     setLoading(true);
     setError("");
 
     try {
-      // 1. Fetch Categories list for name resolution
+      // 1. Fetch Categories list for fallback name resolution
       const catRes = await axios
         .get(`${API_BASE_URL}/categories`, {
           headers: {
@@ -196,7 +197,7 @@ const AdminViewVendor = () => {
       setError(
         err.response?.data?.message ||
           err.message ||
-          "Failed to load vendor details from backend.",
+          "Failed to load vendor details from backend."
       );
     } finally {
       setLoading(false);
@@ -214,7 +215,7 @@ const AdminViewVendor = () => {
 
   /* CATEGORY RESOLUTION */
   const categoryName = useMemo(() => {
-    if (!vendor) return "No Category";
+    if (!vendor) return "General Merchant";
 
     const rawCat =
       vendor.category ||
@@ -223,7 +224,7 @@ const AdminViewVendor = () => {
       vendor.categoryName ||
       vendor.businessCategory;
 
-    if (!rawCat) return "No Category";
+    if (!rawCat) return "General Merchant";
 
     if (Array.isArray(rawCat) && rawCat.length > 0) {
       const names = rawCat
@@ -232,35 +233,33 @@ const AdminViewVendor = () => {
             return c.name || c.categoryName || c.title || "";
           }
           const found = categories.find(
-            (item) => String(item._id || item.id) === String(c),
+            (item) => String(item._id || item.id) === String(c)
           );
-          return found ? found.name || found.categoryName : String(c);
+          return found ? found.name || found.categoryName : "";
         })
         .filter(Boolean);
       if (names.length > 0) return names.join(", ");
     }
 
     if (typeof rawCat === "object" && rawCat !== null) {
-      return rawCat.name || rawCat.categoryName || "No Category";
+      return rawCat.name || rawCat.categoryName || "General Merchant";
     }
 
     if (typeof rawCat === "string" && rawCat.trim()) {
       const catStr = rawCat.trim();
       const found = categories.find(
-        (item) => String(item._id || item.id) === catStr,
+        (item) => String(item._id || item.id) === catStr
       );
       if (found) return found.name || catStr;
       if (!/^[0-9a-fA-F]{24}$/.test(catStr)) return catStr;
     }
 
-    return "No Category";
+    return "General Merchant";
   }, [vendor, categories]);
 
   /* APPROVE VENDOR ACTION */
   const handleApprove = async () => {
-    if (!vendor?._id && !vendor?.id) return;
-    const targetId = vendor._id || vendor.id;
-
+    const targetId = vendor?._id || vendor?.id || vendorId;
     setActionLoading(true);
     try {
       const res = await axios.put(
@@ -271,7 +270,7 @@ const AdminViewVendor = () => {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token,
           },
-        },
+        }
       );
       if (res.status === 200 || res.data?.success) {
         setVendor((prev) => ({
@@ -292,9 +291,7 @@ const AdminViewVendor = () => {
 
   /* SUSPEND VENDOR ACTION */
   const handleSuspend = async () => {
-    if (!vendor?._id && !vendor?.id) return;
-    const targetId = vendor._id || vendor.id;
-
+    const targetId = vendor?._id || vendor?.id || vendorId;
     setActionLoading(true);
     try {
       const res = await axios.put(
@@ -305,7 +302,7 @@ const AdminViewVendor = () => {
             "Content-Type": "application/json",
             Authorization: "Bearer " + token,
           },
-        },
+        }
       );
       if (res.status === 200 || res.data?.success) {
         setVendor((prev) => ({
@@ -329,12 +326,12 @@ const AdminViewVendor = () => {
     const vName = vendor?.storeName || vendor?.name || "this store";
     if (
       !window.confirm(
-        `Are you sure you want to permanently delete store "${vName}"?`,
+        `Are you sure you want to permanently delete store "${vName}"?`
       )
     )
       return;
 
-    const targetId = vendor?._id || vendor?.id;
+    const targetId = vendor?._id || vendor?.id || vendorId;
     setActionLoading(true);
     try {
       const res = await axios.delete(`${API_BASE_URL}/vendors/${targetId}`, {
@@ -379,7 +376,7 @@ const AdminViewVendor = () => {
       <div className="flex min-h-[65vh] flex-col items-center justify-center text-slate-500">
         <Loader2 size={38} className="animate-spin text-[#287b6d]" />
         <p className="mt-4 text-xs font-bold text-slate-600">
-          Loading vendor details...
+          Loading vendor telemetry & store catalog...
         </p>
       </div>
     );
@@ -415,13 +412,14 @@ const AdminViewVendor = () => {
   /* DATA RESOLUTION */
   const vName =
     vendor.storeName || vendor.businessName || vendor.name || "Unnamed Store";
+
   const vOwner =
     (vendor.user
-      ? `${vendor.user.firstName || ""} ${vendor.user.lastName || ""}`.trim()
+      ? `${vendor.user.firstName || ""} ${vendor.user.middleName || ""} ${vendor.user.lastName || ""}`.trim()
       : "") ||
     vendor.ownerName ||
     vendor.contactPerson ||
-    "Not Specified";
+    "Authorized Store Partner";
 
   const vEmail =
     vendor.user?.email || vendor.email || vendor.contactEmail || "N/A";
@@ -441,9 +439,13 @@ const AdminViewVendor = () => {
   const vPan = vendor.panNumber || vendor.pan || "N/A";
   const vGst = vendor.gstNumber || vendor.gst || "N/A";
 
-  // Bank
+  // Banking
   const bank = vendor.bankDetails || {};
   const hasBankInfo = bank.accountNumber || bank.bankName || bank.ifscCode;
+
+  // Catalog and Orders from enriched backend
+  const productsList = vendor.productsList || [];
+  const recentOrders = vendor.recentOrders || [];
 
   const getStatusBadgeStyle = () => {
     if (vStatus === "Active")
@@ -470,7 +472,7 @@ const AdminViewVendor = () => {
             <div className="flex items-center gap-2">
               <span className="inline-block h-2 w-2 rounded-full bg-[#287b6d]" />
               <p className="text-xs font-bold uppercase tracking-[0.16em] text-[#287b6d]">
-                Vendor Profile
+                Vendor Intelligence
               </p>
             </div>
             <h1 className="mt-0.5 text-2xl font-black tracking-tight text-slate-900 md:text-3xl">
@@ -528,14 +530,12 @@ const AdminViewVendor = () => {
 
       {/* STORE HERO BANNER & PROFILE HEADER */}
       <div className="relative overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-xs">
-        {/* Decorative Top Accent Banner */}
         <div className="h-28 bg-gradient-to-r from-[#287b6d] via-[#1f6357] to-[#123e37] relative">
           <div className="absolute inset-0 bg-black/10" />
         </div>
 
         <div className="relative px-6 pb-6 pt-0">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end -mt-12 sm:-mt-14">
-            {/* AVATAR WITH LOGO IMAGE */}
             <VendorAvatar vendor={vendor} size="xl" />
 
             <div className="flex-1 min-w-0">
@@ -564,14 +564,12 @@ const AdminViewVendor = () => {
                 </span>
               </div>
 
-              {/* Bio / Description */}
               {vDescription && (
                 <p className="mt-2 text-xs text-slate-600 line-clamp-2 max-w-2xl">
                   {vDescription}
                 </p>
               )}
 
-              {/* Sub-meta items */}
               <div className="mt-3 flex flex-wrap items-center gap-4 text-xs text-slate-400">
                 <span className="font-mono text-[11px]">
                   ID:{" "}
@@ -600,9 +598,9 @@ const AdminViewVendor = () => {
                 <div className="flex items-center gap-1 text-slate-500">
                   <CalendarDays size={13} />
                   <span>
-                    Joined{" "}
+                    Partner Since{" "}
                     {new Date(
-                      vendor.createdAt || Date.now(),
+                      vendor.createdAt || Date.now()
                     ).toLocaleDateString("en-IN", {
                       day: "numeric",
                       month: "short",
@@ -618,17 +616,15 @@ const AdminViewVendor = () => {
 
       {/* METRICS ROW */}
       <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-        {/* Products */}
+        {/* Total Products */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-500">
-                Total Products
+                Active Catalog Items
               </p>
               <h3 className="mt-2 text-2xl font-black text-slate-900">
-                {formatNumber(
-                  vendor.productCount || vendor.products?.length || 0,
-                )}
+                {formatNumber(vendor.productCount || 0)}
               </h3>
             </div>
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-[#287b6d]/10 text-[#287b6d]">
@@ -636,11 +632,11 @@ const AdminViewVendor = () => {
             </div>
           </div>
           <p className="mt-3 text-[11px] font-medium text-slate-400">
-            Published store catalog
+            Published catalog items
           </p>
         </div>
 
-        {/* Orders */}
+        {/* Total Orders */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
@@ -648,7 +644,7 @@ const AdminViewVendor = () => {
                 Total Orders
               </p>
               <h3 className="mt-2 text-2xl font-black text-slate-900">
-                {formatNumber(vendor.orderCount || vendor.orders?.length || 0)}
+                {formatNumber(vendor.orderCount || 0)}
               </h3>
             </div>
             <div className="grid h-11 w-11 place-items-center rounded-xl bg-blue-50 text-blue-600">
@@ -656,18 +652,18 @@ const AdminViewVendor = () => {
             </div>
           </div>
           <p className="mt-3 text-[11px] font-medium text-slate-400">
-            Fulfilled through platform
+            Purchases containing vendor items
           </p>
         </div>
 
-        {/* Revenue */}
+        {/* Gross Revenue */}
         <div className="rounded-2xl border border-slate-200 bg-white p-5 shadow-xs transition hover:shadow-md">
           <div className="flex items-start justify-between">
             <div>
               <p className="text-xs font-semibold text-slate-500">
-                Gross Sales
+                Gross Sales Volume
               </p>
-              <h3 className="mt-2 text-2xl font-black text-slate-900">
+              <h3 className="mt-2 text-2xl font-black text-emerald-600">
                 {formatCurrency(vendor.revenue || vendor.totalEarnings || 0)}
               </h3>
             </div>
@@ -676,7 +672,7 @@ const AdminViewVendor = () => {
             </div>
           </div>
           <p className="mt-3 text-[11px] font-medium text-slate-400">
-            Total generated revenue
+            Total generated sales
           </p>
         </div>
 
@@ -701,6 +697,151 @@ const AdminViewVendor = () => {
         </div>
       </div>
 
+      {/* CATALOG PRODUCTS & RECENT STORE ORDERS */}
+      <div className="grid gap-6 xl:grid-cols-2">
+        {/* 1. STORE PRODUCTS CATALOG */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-[#287b6d]/10 text-[#287b6d] flex items-center justify-center">
+                <Package size={17} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">
+                  Store Catalog Items
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Products listed by {vName}
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
+              {productsList.length} items
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {productsList.length > 0 ? (
+              productsList.map((prod) => (
+                <div
+                  key={prod.id}
+                  className="p-4 flex items-center gap-3 text-xs hover:bg-slate-50 transition"
+                >
+                  {prod.image ? (
+                    <img
+                      src={prod.image}
+                      alt={prod.name}
+                      className="w-11 h-11 rounded-xl object-cover border border-slate-200 bg-white shrink-0"
+                    />
+                  ) : (
+                    <div className="w-11 h-11 rounded-xl bg-slate-100 flex items-center justify-center text-slate-400 shrink-0 font-bold">
+                      <Package size={18} />
+                    </div>
+                  )}
+
+                  <div className="flex-1 min-w-0">
+                    <p className="font-bold text-slate-900 truncate">
+                      {prod.name}
+                    </p>
+                    <p className="text-slate-400 text-[11px] mt-0.5">
+                      {prod.category} · Stock:{" "}
+                      <span
+                        className={
+                          prod.stock <= 5
+                            ? "text-rose-600 font-bold"
+                            : "text-slate-700 font-semibold"
+                        }
+                      >
+                        {prod.stock} units
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <p className="font-black text-slate-900">
+                      {formatCurrency(prod.price)}
+                    </p>
+                    <span
+                      className={`inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                        prod.stock > 0
+                          ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
+                      }`}
+                    >
+                      {prod.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-400">
+                No catalog items uploaded by this store yet.
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* 2. RECENT STORE PURCHASES */}
+        <div className="rounded-2xl border border-slate-200 bg-white shadow-xs overflow-hidden">
+          <div className="p-5 border-b border-slate-100 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                <ShoppingCart size={17} />
+              </div>
+              <div>
+                <h2 className="text-sm font-bold text-slate-900">
+                  Recent Store Orders
+                </h2>
+                <p className="text-xs text-slate-400">
+                  Purchases fulfilling vendor items
+                </p>
+              </div>
+            </div>
+            <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
+              {recentOrders.length} orders
+            </span>
+          </div>
+
+          <div className="divide-y divide-slate-100">
+            {recentOrders.length > 0 ? (
+              recentOrders.map((ord, idx) => (
+                <div
+                  key={idx}
+                  className="p-4 flex items-center justify-between gap-3 text-xs hover:bg-slate-50 transition"
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-slate-100 flex items-center justify-center text-slate-700 shrink-0 font-bold">
+                      <ShoppingCart size={16} />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-bold text-slate-900 truncate">
+                        {ord.id}
+                      </p>
+                      <p className="text-slate-400 text-[11px] mt-0.5 truncate">
+                        {ord.customer} · {ord.date}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="text-right shrink-0">
+                    <p className="font-black text-slate-900">
+                      {formatCurrency(ord.amount)}
+                    </p>
+                    <span className="inline-block mt-0.5 px-2 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-700 capitalize">
+                      {ord.status}
+                    </span>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className="p-8 text-center text-xs text-slate-400">
+                No orders processed for this store yet.
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
       {/* DETAILED INFORMATION CARDS */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* 1. MERCHANT & CONTACT INFORMATION */}
@@ -722,13 +863,13 @@ const AdminViewVendor = () => {
               </div>
               <div>
                 <p className="text-[11px] font-medium text-slate-400">
-                  Store Owner
+                  Store Owner / Representative
                 </p>
                 <p className="text-sm font-bold text-slate-800">{vOwner}</p>
               </div>
             </div>
 
-            {/* Email with direct mailto */}
+            {/* Email */}
             <div className="flex items-start gap-3.5">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                 <Mail size={16} />
@@ -762,7 +903,7 @@ const AdminViewVendor = () => {
               </div>
             </div>
 
-            {/* Phone with callto */}
+            {/* Phone */}
             <div className="flex items-start gap-3.5">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                 <Phone size={16} />
@@ -796,7 +937,7 @@ const AdminViewVendor = () => {
               </div>
             </div>
 
-            {/* Business Address */}
+            {/* Operating Address */}
             <div className="flex items-start gap-3.5 pt-1">
               <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-slate-100 text-slate-600">
                 <MapPin size={16} />
@@ -947,7 +1088,7 @@ const AdminViewVendor = () => {
                   Bank Name
                 </p>
                 <p className="mt-1 text-sm font-bold text-slate-800">
-                  {bank.bankName || "N/A"}
+                  {bank.bankName || "Authorized Bank"}
                 </p>
               </div>
 
@@ -956,7 +1097,7 @@ const AdminViewVendor = () => {
                   Account Holder
                 </p>
                 <p className="mt-1 text-sm font-bold text-slate-800 truncate">
-                  {bank.accountHolderName || vOwner || "N/A"}
+                  {bank.accountHolderName || vOwner}
                 </p>
               </div>
 
