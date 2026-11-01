@@ -101,11 +101,8 @@ const ProfilePage = () => {
         headers: { Authorization: "Bearer " + token },
       })
       .then((res) => {
-        const products =
-          res.data?.wishlist?.product ||
-          res.data?.product ||
-          res.data || [];
-        setWishlistCount(Array.isArray(products) ? products.length : 0);
+        const list = res.data?.wishlist;
+        setWishlistCount(Array.isArray(list) ? list.length : 0);
       })
       .catch((err) => console.error("Wishlist count fetch failed:", err));
   }, [token]);
