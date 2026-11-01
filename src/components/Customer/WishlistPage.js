@@ -546,13 +546,13 @@ const WishlistPage = () => {
                           <img
                             src={vendorLogo}
                             alt={vendorName}
-                            className="size-4.5 rounded-full object-cover border border-slate-200"
+                            className="w-5 h-5 shrink-0 rounded-full object-cover border border-slate-200"
                             onError={(e) => {
                               e.target.style.display = "none";
                             }}
                           />
                         ) : (
-                          <div className="grid size-4.5 place-items-center rounded-full bg-primary/10 text-primary text-[8px] font-bold">
+                          <div className="grid w-5 h-5 shrink-0 place-items-center rounded-full bg-primary/10 text-primary text-[8px] font-bold">
                             {getInitials(vendorName)}
                           </div>
                         )}
