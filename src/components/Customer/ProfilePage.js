@@ -102,8 +102,8 @@ const ProfilePage = () => {
       })
       .then((res) => {
         const products =
-          res.data?.wishlist?.products ||
-          res.data?.products ||
+          res.data?.wishlist?.product ||
+          res.data?.product ||
           res.data || [];
         setWishlistCount(Array.isArray(products) ? products.length : 0);
       })
