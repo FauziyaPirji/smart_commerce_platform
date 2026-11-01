@@ -77,6 +77,39 @@ const ProfilePage = () => {
   const [passwordErrors, setPasswordErrors] = useState({});
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
 
+  const [orderCount, setOrderCount] = useState(0);
+  const [wishlistCount, setWishlistCount] = useState(0);
+
+  useEffect(() => {
+    if (!token) return;
+    // Fetch order count
+    axios
+      .get("https://smart-commerce-platform-backend.onrender.com/api/customer/orders", {
+        headers: { Authorization: "Bearer " + token },
+      })
+      .then((res) => {
+        if (res.data?.orders) {
+          setOrderCount(res.data.orders.length);
+        } else if (Array.isArray(res.data)) {
+          setOrderCount(res.data.length);
+        }
+      })
+      .catch((err) => console.error("Order count fetch failed:", err));
+    // Fetch wishlist count
+    axios
+      .get("https://smart-commerce-platform-backend.onrender.com/api/customer/wishlist", {
+        headers: { Authorization: "Bearer " + token },
+      })
+      .then((res) => {
+        const products =
+          res.data?.wishlist?.products ||
+          res.data?.products ||
+          res.data || [];
+        setWishlistCount(Array.isArray(products) ? products.length : 0);
+      })
+      .catch((err) => console.error("Wishlist count fetch failed:", err));
+  }, [token]);
+
   /* INITIAL LOAD FROM LOCALSTORAGE */
   useEffect(() => {
     const savedUser = localStorage.getItem("user");
@@ -528,13 +561,12 @@ const ProfilePage = () => {
           <div className="grid grid-cols-2 divide-x divide-border sm:grid-cols-4">
             <Link to="/orders" className="p-5 transition hover:bg-muted">
               <Package size={18} className="text-primary" />
-              <p className="mt-3 text-2xl font-extrabold">0</p>
+              <p className="mt-3 text-2xl font-extrabold">{orderCount}</p>
               <p className="mt-1 text-xs text-muted-foreground">Orders</p>
             </Link>
-
             <Link to="/wishlist" className="p-5 transition hover:bg-muted">
               <Heart size={18} className="text-primary" />
-              <p className="mt-3 text-2xl font-extrabold">0</p>
+              <p className="mt-3 text-2xl font-extrabold">{wishlistCount}</p>
               <p className="mt-1 text-xs text-muted-foreground">Wishlist</p>
             </Link>
 
